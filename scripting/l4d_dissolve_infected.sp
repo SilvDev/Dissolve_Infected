@@ -1,4 +1,24 @@
-#define PLUGIN_VERSION 		"1.15"
+/*
+*	Dissolve Infected
+*	Copyright (C) 2022 Silvers
+*
+*	This program is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	This program is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+
+#define PLUGIN_VERSION 		"1.16"
 
 /*======================================================================================
 	Plugin Info:
@@ -11,6 +31,10 @@
 
 ========================================================================================
 	Change Log:
+
+1.16 (03-Jan-2022)
+	- Changes to fix warnings when compiling on SourceMod 1.11.
+	- Fixed rare error about invalid edict. Thanks to "ur5efj" for reporting.
 
 1.15 (10-May-2020)
 	- Added better error log message when gamedata file is missing.
@@ -242,28 +266,29 @@ void ResetPlugin()
 	// DeleteFader();
 }
 
-public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
+public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	ResetPlugin();
 }
 
-public Action Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	if( g_iPlayerSpawn == 1 && g_iRoundStart == 0 )
-		CreateTimer(2.0, tmrLoad, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(2.0, TimerLoad, _, TIMER_FLAG_NO_MAPCHANGE);
 	g_iRoundStart = 1;
 }
 
-public Action Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	if( g_iPlayerSpawn == 0 && g_iRoundStart == 1 )
-		CreateTimer(2.0, tmrLoad, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(2.0, TimerLoad, _, TIMER_FLAG_NO_MAPCHANGE);
 	g_iPlayerSpawn = 1;
 }
 
-public Action tmrLoad(Handle timer)
+public Action TimerLoad(Handle timer)
 {
 	LoadPlugin();
+	return Plugin_Continue;
 }
 
 void LoadPlugin()
@@ -528,7 +553,7 @@ public void Event_Death(Event event, const char[] name, bool dontBroadcast)
 			if( IsValidEntity(target) )
 			{
 				char sTemp[64];
-				GetEdictClassname(target, sTemp, sizeof(sTemp));
+				GetEntityClassname(target, sTemp, sizeof(sTemp));
 				bool bChance;
 				bool bWitch;
 
